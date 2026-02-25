@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- SimpleMDE Markdown Editor CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard-cover full-width full-height">
+    <div class="dashboard-header">
+      <h2>🚀 Project Collaboration Dashboard</h2>
+      <p>Manage your projects and team members easily.</p>
+    </div>
+    <div class="dashboard-grid">
+      <div class="dashboard-section dashboard-projects dashboard-card">
+        <h3><span class="icon">📁</span> Your Projects</h3>
+        <ul id="projectList" class="project-list"></ul>
+      </div>
+      <div class="dashboard-section dashboard-notes dashboard-card">
+        <h3><span class="icon">📝</span> Project Notes (Markdown)</h3>
+        <textarea id="markdown-notes"></textarea>
+        <div style="display:flex; gap:1rem; margin-top:1rem;">
+          <button id="explainBtn" class="btn-primary" type="button">Explain this note content (Gemini)</button>
+          <button id="suggestBtn" class="btn-secondary" type="button">Suggest improvements (Gemini)</button>
+        </div>
+        <div id="ai-response" style="margin-top:1.5rem; background:#f3f4f6; border-radius:8px; padding:1rem; display:none;"></div>
+      </div>
+      <div class="dashboard-section dashboard-create dashboard-card">
+        <h3><span class="icon">➕</span> Create New Project</h3>
+        <form id="createProjectForm">
+          <label for="projectName">Project Name:</label>
+          <input type="text" id="projectName" name="projectName" required>
+          <button type="submit" class="btn-primary">Create Project</button>
+        </form>
+      </div>
+      <div class="dashboard-section dashboard-member dashboard-card">
+        <h3><span class="icon">👥</span> Add Member to Project</h3>
+        <form id="addMemberForm">
+          <label for="memberEmail">Member Email:</label>
+          <input type="email" id="memberEmail" name="memberEmail" required>
+          <button type="submit" class="btn-secondary">Add Member</button>
+        </form>
+      </div>
+      <div class="dashboard-section dashboard-files dashboard-card">
+        <h3><span class="icon">📤</span> Project Files</h3>
+        <form id="fileUploadForm" enctype="multipart/form-data" style="margin-bottom:1rem;">
+          <input type="file" id="fileInput" name="file" required style="margin-bottom:0.7rem;">
+          <button type="submit" class="btn-primary">Upload File</button>
+        </form>
+        <ul id="fileList" class="file-list"></ul>
+        <div id="filePreview" style="margin-top:1rem;"></div>
+      </div>
+    </div>
+    <footer class="dashboard-footer">
+      <p>&copy; 2026 Project Collaboration. All rights reserved.</p>
+    </footer>
+  </div>
+  <!-- SimpleMDE Markdown Editor JS -->
+  <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+  <script>
+    // Placeholder for dashboard logic
+    document.getElementById('createProjectForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const projectName = document.getElementById('projectName').value.trim();
+      // TODO: Replace with actual logged-in user ID
+      const creatorId = prompt('Enter your user ID for testing:');
+      if (!projectName || !creatorId) {
+        alert('Project name and user ID are required!');
+        return;
+      }
+      fetch('http://localhost:5000/api/projects/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: projectName, creatorId })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.project) {
+          alert('Project created: ' + data.project.name);
+          document.getElementById('projectName').value = '';
+        } else {
+          alert('Error: ' + (data.message || 'Unknown error'));
+        }
+      })
+      .catch(err => alert('Error: ' + err.message));
+    });
+    document.getElementById('addMemberForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const memberEmail = document.getElementById('memberEmail').value.trim();
+      const projectId = prompt('Enter the project ID to add member to:');
+      if (!memberEmail || !projectId) {
+        alert('Member email and project ID are required!');
+        return;
+      }
+      fetch('http://localhost:5000/api/projects/add-member', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId, memberEmail })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.project) {
+          alert('Member added to project!');
+          document.getElementById('memberEmail').value = '';
+        } else {
+          alert('Error: ' + (data.message || 'Unknown error'));
+        }
+      })
+      .catch(err => alert('Error: ' + err.message));
+    });
+    // --- Dynamic Project List ---
+    let currentUserId = null;
+    function fetchProjectsAndRender() {
+      if (!currentUserId) return;
+      fetch(`http://localhost:5000/api/projects/user/${currentUserId}`)
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById('projectList');
+          if (data.projects && data.projects.length > 0) {
+            list.innerHTML = data.projects.map(p => {
+              const members = p.members && p.members.length > 0 ? p.members.map(m => `${m.name || ''} (${m.email})`).join(', ') : 'No members';
+              return `<li class="project-item"><span class="icon">📁</span> <b>${p.name}</b><br><small>${p.description || ''}</small><br><b>Members:</b> ${members}<br><b>ID:</b> ${p._id}
+                <form class="add-member-inline" data-project="${p._id}" style="margin-top:8px;">
+                  <input type="email" placeholder="Member Email" required style="width:180px;">
+                  <button type="submit" class="btn-secondary" style="margin-left:4px;">Add Member</button>
+                </form>
+              </li>`;
+            }).join('');
+            // Attach event listeners for each add-member form
+            document.querySelectorAll('.add-member-inline').forEach(form => {
+              form.onsubmit = function(e) {
+                e.preventDefault();
+                const projectId = form.getAttribute('data-project');
+                const memberEmail = form.querySelector('input').value.trim();
+                if (!memberEmail) {
+                  alert('Member email is required!');
+                  return;
+                }
+                fetch('http://localhost:5000/api/projects/add-member', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ projectId, memberEmail })
+                })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.project) {
+                    alert('Member added to project!');
+                    form.querySelector('input').value = '';
+                    fetchProjectsAndRender();
+                  } else {
+                    alert('Error: ' + (data.message || 'Unknown error'));
+                  }
+                })
+                .catch(err => alert('Error: ' + err.message));
+              };
+            });
+          } else {
+            list.innerHTML = '<li>No projects found.</li>';
+          }
+        })
+        .catch(() => {
+          document.getElementById('projectList').innerHTML = '<li>Error loading projects.</li>';
+        });
+    }
+
+    // Prompt for user ID on load (simulate login)
+    window.addEventListener('DOMContentLoaded', function() {
+      currentUserId = prompt('Enter your user ID to view your projects:');
+      fetchProjectsAndRender();
+    });
+
+    // SimpleMDE Markdown Editor
+    var simplemde = new SimpleMDE({ element: document.getElementById("markdown-notes"), spellChecker: false, status: false, placeholder: "Write your project notes in Markdown..." });
+
+    // Gemini AI buttons (frontend only, no backend integration yet)
+    async function callGemini(content, action) {
+      const aiDiv = document.getElementById('ai-response');
+      aiDiv.style.display = 'block';
+      aiDiv.innerHTML = '<em>Loading from Gemini...</em>';
+      try {
+        const response = await fetch('http://localhost:5000/api/gemini', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content, action })
+        });
+        const data = await response.json();
+        if (response.ok && data.result) {
+          aiDiv.innerHTML = `<b>Gemini (${action === 'explain' ? 'Explain' : 'Suggest Improvements'}):</b><br>${data.result}`;
+        } else {
+          let errorMsg = data.message || 'Unknown error.';
+          if (data.error) {
+            errorMsg += `<br><pre>${data.error}</pre>`;
+          }
+          aiDiv.innerHTML = `<b>Gemini Error:</b> ${errorMsg}`;
+        }
+      } catch (err) {
+        aiDiv.innerHTML = `<b>Gemini Error:</b> ${err.message}`;
+      }
+    }
+    document.getElementById('explainBtn').onclick = function() {
+      var content = simplemde.value();
+      callGemini(content, 'explain');
+    };
+    document.getElementById('suggestBtn').onclick = function() {
+      var content = simplemde.value();
+      callGemini(content, 'suggest');
+    };
+    // --- File Upload & Preview ---
+    const fileUploadForm = document.getElementById('fileUploadForm');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const filePreview = document.getElementById('filePreview');
+    let currentProjectId = null; // Set this when a project is selected
+
+    function fetchFilesAndRender(projectId) {
+      fetch(`http://localhost:5000/api/files/project/${projectId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.files && data.files.length > 0) {
+            fileList.innerHTML = data.files.map(f => {
+              const isImage = f.mimetype.startsWith('image/');
+              const isText = f.mimetype.startsWith('text/') || /\\.(js|py|txt|md)$/i.test(f.originalName);
+              return `<li>
+                <b>${f.originalName}</b>
+                <button onclick="previewFile('${f._id}', '${f.mimetype}', '${f.originalName}')">Preview</button>
+                ${isText ? `<button onclick="explainFile('${f._id}')">Explain this code</button>` : ''}
+              </li>`;
+            }).join('');
+          } else {
+            fileList.innerHTML = '<li>No files uploaded.</li>';
+          }
+        });
+    }
+
+    fileUploadForm.onsubmit = function(e) {
+      e.preventDefault();
+      if (!currentProjectId) return alert('Select a project first!');
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('projectId', currentProjectId);
+      formData.append('uploaderId', currentUserId);
+      fetch('http://localhost:5000/api/files/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.file) {
+          fetchFilesAndRender(currentProjectId);
+          fileInput.value = '';
+        } else {
+          alert('Upload failed');
+        }
+      });
+    };
+
+    window.previewFile = function(fileId, mimetype, originalName) {
+      filePreview.innerHTML = '<em>Loading preview...</em>';
+      fetch(`http://localhost:5000/api/files/download/${fileId}`)
+        .then(res => {
+          if (mimetype.startsWith('image/')) return res.blob();
+          return res.text();
+        })
+        .then(data => {
+          if (typeof data === 'string') {
+            filePreview.innerHTML = `<pre style='max-height:300px;overflow:auto;background:#f3f4f6;padding:1rem;border-radius:8px;'>${escapeHtml(data)}</pre>`;
+          } else {
+            const url = URL.createObjectURL(data);
+            filePreview.innerHTML = `<img src='${url}' alt='${originalName}' style='max-width:100%;border-radius:8px;'>`;
+          }
+        });
+    };
+
+    window.explainFile = function(fileId) {
+      filePreview.innerHTML = '<em>Loading code for Gemini...</em>';
+      fetch(`http://localhost:5000/api/files/download/${fileId}`)
+        .then(res => res.text())
+        .then(code => fetch('http://localhost:5000/api/gemini', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: code, action: 'explain' })
+        }))
+        .then(res => res.json())
+        .then(data => {
+          filePreview.innerHTML = `<b>Gemini Explanation:</b><br><div style='background:#f3f4f6;padding:1rem;border-radius:8px;'>${data.result || data.message}</div>`;
+        });
+    };
+
+    function escapeHtml(text) {
+      var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+  </script>
+</body>
+</html>
