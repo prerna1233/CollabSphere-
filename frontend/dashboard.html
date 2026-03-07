@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Project Dashboard</title>
+<link rel="stylesheet" href="dark-style.css">
+
+<style>
+/* Header */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #e5e7eb;
+  color: #374151;
+  padding: 24px 48px;
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(30,41,59,0.08);
+  border-bottom: 2px solid #d1d5db;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.navbar-logo img {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(30,41,59,0.10);
+}
+
+.navbar-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #6366f1;
+}
+
+.navbar-subtitle {
+  font-size: 1.05rem;
+  color: #6b7280;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+body{
+background:#18223a;
+color:#e5e7eb;
+font-family:'Segoe UI', Arial, sans-serif;
+margin:0;
+padding:0;
+min-height:100vh;
+}
+
+/* Layout */
+
+.dashboard-container{
+width:100vw;
+max-width:1800px;
+margin:auto;
+padding:40px 0;
+min-height:calc(100vh - 80px);
+}
+
+.dashboard-grid{
+display: grid;
+grid-template-columns: 1.2fr 2.5fr;
+gap: 48px;
+align-items: stretch;
+height: 100%;
+min-height: 600px;
+}
+
+/* Cards */
+
+.dashboard-card {
+  background: #222c44;
+  border: 1px solid #26324a;
+  border-radius: 16px;
+  padding: 48px 36px;
+  box-shadow: 0 8px 32px rgba(30,41,59,0.10);
+  transition: box-shadow 0.2s;
+  min-height: 340px;
+  font-size: 1.15rem;
+}
+.dashboard-card:hover {
+   box-shadow:0 12px 32px rgba(99,102,241,0.13);
+ }
+
+.dashboard-card h3 {
+  margin-top: 0;
+  color: #a78bfa;
+}
+
+.dashboard-card pre, .dashboard-card textarea, .dashboard-card input {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+.dashboard-card pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.dashboard-card {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Inputs */
+
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border-radius: 12px;
+  border: 1px solid #26324a;
+  font-size: 1rem;
+  background: #1f2937;
+  color: #e5e7eb;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+/* Buttons */
+
+button {
+  background: #7c3aed;
+  color: #fff;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 16px;
+  cursor: pointer;
+  margin-top: 16px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(124,58,237,0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+  background: #a78bfa;
+  box-shadow: 0 4px 16px rgba(124,58,237,0.13);
+}
+
+/* Member tags */
+
+.member-tag{
+display:inline-block;
+background:#6366f1;
+color:white;
+padding:5px 10px;
+border-radius:6px;
+margin:5px;
+}
+
+/* Project cards */
+.project-card {
+  border: 1px solid #26324a;
+  padding: 18px;
+  border-radius: 16px;
+  margin-top: 18px;
+  margin-bottom: 18px;
+  background: #1a2233;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notes-list {
+  margin-top:10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.saved-note {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:#e0e7ef;
+  border-radius:6px;
+  padding:6px 12px;
+}
+
+.project-card textarea.note-input {
+  margin-top:8px;
+  margin-bottom:4px;
+  min-height:32px;
+}
+
+.project-card pre {
+  background:#374151;
+  color:#e5e7eb;
+  border-radius:8px;
+  padding:8px 12px;
+  margin-top:8px;
+  margin-bottom:8px;
+  font-size:1rem;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
+.project-card h4 {
+  margin-bottom:6px;
+}
+
+.project-card p {
+  margin-bottom:8px;
+  margin-top:0;
+  border:none !important;
+  background:#fff;
+  box-shadow:none !important;
+  outline:none !important;
+}
+
+/* Modal */
+
+#fileModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30, 41, 59, 0.45);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+#fileModal > div {
+  background: #fff;
+  color: #374151;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(99,102,241,0.13);
+  padding: 2rem;
+  max-width: 700px;
+  width: 90vw;
+  max-height: 80vh;
+  overflow: auto;
+  position: relative;
+}
+
+#closeFileModal {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+#modalFileName {
+  margin: 0;
+}
+
+#modalFileContent {
+  background: #374151;
+  color: #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+  font-size: 1.05rem;
+  max-height: 60vh;
+  overflow: auto;
+}
+
+/* Media Queries */
+@media (max-width: 1100px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 16px;
+  }
+  .dashboard-header {
+    padding: 14px 8px;
+    font-size: 1.2rem;
+  }
+  .dashboard-card {
+    padding: 20px 8px;
+    min-height: 160px;
+  }
+  .project-card {
+    padding: 10px;
+    min-height: 80px;
+  }
+}
+
+@media (max-width: 700px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px 4px;
+    font-size: 1rem;
+  }
+  .dashboard-content {
+    padding: 4px;
+    gap: 6px;
+  }
+  .dashboard-card {
+    padding: 8px 2px;
+    min-height: 80px;
+  }
+  .project-card {
+    padding: 4px;
+    min-height: 40px;
+  }
+  button {
+    padding: 6px 8px;
+    font-size: 0.95rem;
+  }
+  input, textarea {
+    padding: 6px;
+    font-size: 0.9rem;
+  }
+  /* Make file action buttons inside project cards responsive */
+  .project-card .file-action-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+  }
+  .project-card .view-file-btn,
+  .project-card .edit-file-btn,
+  .project-card .delete-file-btn {
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    margin: 2px 0;
+    min-width: 48px;
+    text-align: center;
+  }
+  .project-card span[style*='background:#e0e7ef'] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 0.85rem;
+    padding: 4px 6px !important;
+    margin: 2px 2px 2px 0 !important;
+    min-width: 120px;
+  }
+}
+.project-card .note-input {
+  color: #fff;
+  background: #111;
+}
+.saved-note span {
+  color: #111;
+}
+
+/* Add CSS for file preview */
+.file-preview {
+  color: #fff;
+  background: #222c44;
+  border: 1px solid #26324a;
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin: 4px 0;
+  font-size: 1rem;
+}
+.file-count {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+</style>
+</head>
+
+<body>
+<div class="dashboard-main">
+  <!-- Top Header -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <span class="header-title">CollabSphere Developer Dashboard</span>
+    </div>
+    <div class="header-right">
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </header>
+
+  <!-- Main Workspace Area -->
+  <main class="dashboard-content">
+    <section class="dashboard-section" id="projects">
+      <div class="dashboard-card project-list-card">
+        <h3>Your Projects</h3>
+        <div id="projectCards"></div>
+      </div>
+    </section>
+    <section class="dashboard-section" id="create">
+      <div class="dashboard-card project-form-card">
+        <h3>Create Project</h3>
+        <form id="addProjectForm">
+          <input type="text" id="projectName" placeholder="Project Name" required>
+          <textarea id="projectDesc" placeholder="Project Description"></textarea>
+          <input type="file" id="projectFilesInput" multiple accept=".js,.py,.txt,.java,.cpp,.ts,.json,.html,.css">
+          <div id="projectFilesList"></div>
+          <button type="submit">Add Project</button>
+        </form>
+      </div>
+    </section>
+    <section class="dashboard-section" id="ai">
+      <div class="dashboard-card gemini-card">
+        <h3>Gemini Code Explanation</h3>
+        <textarea id="codeInput" placeholder="Paste code here"></textarea>
+        <button id="explainBtn">Explain Code</button>
+        <button id="explainNoteBtn" class="purple">Explain this note content</button>
+        <button id="suggestImprovementsBtn" class="success">Suggest improvements for this note</button>
+        <pre id="geminiOutput"></pre>
+      </div>
+    </section>
+  </main>
+  <!-- Modal for file preview -->
+  <div id="fileModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(30,41,59,0.45);backdrop-filter:blur(6px);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fff;color:#374151;border-radius:16px;box-shadow:0 8px 32px rgba(99,102,241,0.13);padding:2rem;max-width:700px;width:90vw;max-height:80vh;overflow:auto;position:relative;">
+      <button id="closeFileModal" style="position:absolute;top:12px;right:12px;background:#dc2626;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;">Close</button>
+      <h3 id="modalFileName"></h3>
+      <pre id="modalFileContent" style="background:#374151;color:#e5e7eb;border-radius:10px;padding:1rem;font-size:1.05rem;max-height:60vh;overflow:auto;"></pre>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+<script>
+
+const userEmail = localStorage.getItem('email');
+let projects = [];
+
+async function fetchProjects() {
+  if (!userEmail) return;
+  const res = await fetch(`http://localhost:5000/api/auth/projects?email=${encodeURIComponent(userEmail)}`);
+  const data = await res.json();
+  projects = data.projects || [];
+  renderProjects();
+}
+
+function renderProjects(){
+  document.getElementById("projectCards").innerHTML =
+    projects.map((p, idx)=>{
+      let notesHtml = (p.notes||[]).map((note, nidx) => `
+        <div class="saved-note">
+          <span>${note}</span>
+          <button class="edit-note-btn" data-idx="${idx}" data-nidx="${nidx}" style="background:#f59e42;">Edit</button>
+          <button class="delete-note-btn" data-idx="${idx}" data-nidx="${nidx}" style="background:#dc2626;">Delete</button>
+        </div>
+      `).join("");
+    let filesHtml = (p.files && p.files.length) ? `<div><b>Files:</b> ${p.files.map((f, fidx)=>
+  `<span style='background:#e0e7ef;color:#fff;padding:4px 10px;border-radius:6px;margin:2px;'>${f.name}
+          <button class="view-file-btn" data-idx="${idx}" data-fidx="${fidx}" style="background:#6366f1;color:#fff;border:none;padding:2px 6px;border-radius:4px;margin-left:4px;">View</button>
+          <button class="edit-file-btn" data-idx="${idx}" data-fidx="${fidx}" style="background:#f59e42;color:#fff;border:none;padding:2px 6px;border-radius:4px;margin-left:4px;">Edit</button>
+          <button class="delete-file-btn" data-idx="${idx}" data-fidx="${fidx}" style="background:#dc2626;color:#fff;border:none;padding:2px 6px;border-radius:4px;margin-left:4px;">Delete</button>
+        </span>`).join('')}</div>` : '';
+      return `
+        <div class="project-card">
+          <h4>${p.name}</h4>
+          <p style="margin-bottom:0;margin-top:0;">${p.desc}</p>
+          <div class="team-member-section">
+            <input type="email" class="team-member-input" placeholder="Add team member email" style="margin-bottom:8px;">
+            <button class="add-team-member-btn" data-idx="${idx}" style="background:#10b981;margin-bottom:8px;">Add Team Member</button>
+            <div class="team-member-list">${(p.members||[]).map(m=>`<span class="member-tag">${m}</span>`).join('')}</div>
+          </div>
+          ${filesHtml}
+          <pre>${p.code}</pre>
+          <button class="delete-btn" style="background:#dc2626;" onclick="deleteProject('${p._id}')">Delete</button>
+          <textarea class="note-input" placeholder="Add a note..."></textarea>
+          <button class="save-note-btn" style="background:#10b981;" data-idx="${idx}">Add Note</button>
+          <button class="update-note-btn" style="background:#f59e42;display:none;" data-idx="${idx}">Update Note</button>
+          <div class="notes-list">${notesHtml}</div>
+        </div>
+      `;
+    }).join("");
+
+  // File actions
+  document.querySelectorAll('.view-file-btn').forEach(btn => {
+    btn.onclick = function() {
+      const idx = btn.getAttribute('data-idx');
+      const fidx = btn.getAttribute('data-fidx');
+      let project = projects[idx];
+      if (!project || !project.files || !project.files[fidx]) {
+        alert('File not found.');
+        return;
+      }
+      let fileObj = project.files[fidx];
+      document.getElementById("modalFileName").textContent = fileObj.name;
+      document.getElementById("modalFileContent").textContent = fileObj.content || 'No content available';
+      document.getElementById("fileModal").style.display = "flex";
+      var closeBtn = document.getElementById("closeFileModal");
+      if (closeBtn) {
+        closeBtn.onclick = function(){
+          document.getElementById("fileModal").style.display = "none";
+        };
+      }
+    };
+  });
+  document.querySelectorAll('.edit-file-btn').forEach(btn => {
+    btn.onclick = function() {
+      const idx = btn.getAttribute('data-idx');
+      const fidx = btn.getAttribute('data-fidx');
+      let project = projects[idx];
+      if (!project || !project.files || !project.files[fidx]) {
+        alert('File not found.');
+        return;
+      }
+      let newName = prompt('Edit file name:', project.files[fidx].name);
+      if (newName && newName.trim()) {
+        project.files[fidx].name = newName.trim();
+        // Update backend here if needed
+        renderProjects();
+      }
+    };
+  });
+  document.querySelectorAll('.delete-file-btn').forEach(btn => {
+    btn.onclick = function() {
+      const idx = btn.getAttribute('data-idx');
+      const fidx = btn.getAttribute('data-fidx');
+      let project = projects[idx];
+      if (!project || !project.files || !project.files[fidx]) {
+        alert('File not found.');
+        return;
+      }
+      project.files.splice(fidx, 1);
+      // Update backend here if needed
+      renderProjects();
+    };
+  });
+
+  // Note actions
+  document.querySelectorAll('.save-note-btn').forEach(btn => {
+    btn.onclick = async function() {
+      const idx = btn.getAttribute('data-idx');
+      let project = projects[idx];
+      if (!project) {
+        alert('Project not found.');
+        return;
+      }
+      const card = btn.closest('.project-card');
+      const noteInput = card.querySelector('.note-input');
+      const note = noteInput.value.trim();
+      if (note) {
+        if (!Array.isArray(project.notes)) project.notes = [];
+        project.notes.push(note);
+        // Update backend
+        await fetch(`http://localhost:5000/api/auth/project/${project._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notes: project.notes })
+        });
+        fetchProjects();
+        alert('Note added for this project!');
+      }
+    };
+  });
+  document.querySelectorAll('.edit-note-btn').forEach(btn => {
+    btn.onclick = function() {
+      const idx = btn.getAttribute('data-idx');
+      const nidx = btn.getAttribute('data-nidx');
+      let project = projects[idx];
+      const card = btn.closest('.project-card');
+      const noteInput = card.querySelector('.note-input');
+      const updateBtn = card.querySelector('.update-note-btn');
+      noteInput.value = project.notes[nidx];
+      updateBtn.style.display = 'inline-block';
+      updateBtn.setAttribute('data-nidx', nidx);
+      card.querySelector('.save-note-btn').style.display = 'none';
+    };
+  });
+  document.querySelectorAll('.update-note-btn').forEach(btn => {
+    btn.onclick = async function() {
+      const idx = btn.getAttribute('data-idx');
+      const nidx = btn.getAttribute('data-nidx');
+      let project = projects[idx];
+      const card = btn.closest('.project-card');
+      const noteInput = card.querySelector('.note-input');
+      const updatedNote = noteInput.value.trim();
+      if (updatedNote) {
+        project.notes[nidx] = updatedNote;
+        // Update backend
+        await fetch(`http://localhost:5000/api/auth/project/${project._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notes: project.notes })
+        });
+        fetchProjects();
+      }
+    };
+  });
+  document.querySelectorAll('.delete-note-btn').forEach(btn => {
+    btn.onclick = async function() {
+      const idx = btn.getAttribute('data-idx');
+      const nidx = btn.getAttribute('data-nidx');
+      let project = projects[idx];
+      project.notes.splice(nidx, 1);
+      // Update backend
+      await fetch(`http://localhost:5000/api/auth/project/${project._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: project.notes })
+      });
+      fetchProjects();
+    };
+  });
+
+  // Team member actions
+  document.querySelectorAll('.add-team-member-btn').forEach(btn => {
+    btn.onclick = async function() {
+      const idx = btn.getAttribute('data-idx');
+      const card = btn.closest('.project-card');
+      const input = card.querySelector('.team-member-input');
+      const email = input.value.trim();
+      if (email) {
+        let project = projects[idx];
+        if (!Array.isArray(project.members)) project.members = [];
+        if (!project.members.includes(email)) {
+          project.members.push(email);
+          await fetch(`http://localhost:5000/api/auth/project/${project._id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ members: project.members })
+          });
+          fetchProjects();
+        } else {
+          alert('Member already added!');
+        }
+        input.value = '';
+      }
+    };
+  });
+
+  // Close modal on outside click
+  window.onclick = function(event) {
+    const modal = document.getElementById("fileModal");
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  };
+}
+
+// File input preview for multiple files
+const projectFilesInput = document.getElementById('projectFilesInput');
+const projectFilesList = document.getElementById('projectFilesList');
+if (projectFilesInput && projectFilesList) {
+  projectFilesInput.addEventListener('change', function() {
+    const files = Array.from(projectFilesInput.files);
+    // Clear the preview list before appending
+    projectFilesList.innerHTML = '';
+    files.forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'file-preview';
+      div.textContent = f.name;
+      projectFilesList.appendChild(div);
+    });
+    // Show file count
+    const fileCountDiv = document.createElement('div');
+    fileCountDiv.className = 'file-count';
+    fileCountDiv.textContent = `Total files added: ${files.length}`;
+    fileCountDiv.style.color = '#a7f3d0';
+    fileCountDiv.style.marginTop = '8px';
+    projectFilesList.appendChild(fileCountDiv);
+  });
+}
+
+window.deleteProject = async function(id) {
+  await fetch(`http://localhost:5000/api/auth/project/${id}`, { method: 'DELETE' });
+  fetchProjects();
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Gemini code explanation (Cloud API integration)
+  const explainBtn = document.getElementById('explainBtn');
+  const explainNoteBtn = document.getElementById('explainNoteBtn');
+  const suggestImprovementsBtn = document.getElementById('suggestImprovementsBtn');
+  const codeInput = document.getElementById('codeInput');
+  const geminiOutput = document.getElementById('geminiOutput');
+  const GEMINI_API_KEY = 'AIzaSyDPesVXp4EgkrB_V4gABxcEU4nJwdCtNNI'; // <-- Replace with your Gemini API key
+    if (explainBtn && codeInput && geminiOutput) {
+      explainBtn.onclick = async function() {
+        const code = codeInput.value.trim();
+        if (!code) {
+          geminiOutput.textContent = 'Please paste code to explain.';
+          return;
+        }
+        geminiOutput.textContent = 'Loading...';
+        try {
+          const response = await fetch('http://localhost:5000/api/gemini/explain', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
+          });
+          const data = await response.json();
+          geminiOutput.textContent = data.explanation || 'No explanation found.';
+        } catch (err) {
+          geminiOutput.textContent = 'Error: ' + err.message;
+        }
+      };
+  }
+
+  async function explainWithGemini(input) {
+  try {
+    const res = await fetch('http://localhost:5000/api/gemini/explain', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({input})
+    });
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Gemini API error: ${res.status} ${errorText}`);
+    }
+    const data = await res.json();
+    return data.explanation || data.error || 'No explanation returned.';
+  } catch (err) {
+    return 'Error: ' + err.message;
+  }
+}
+
+  // Gemini note explanation
+  if (explainNoteBtn) {
+    explainNoteBtn.onclick = async function() {
+      const note = codeInput.value;
+      if (!note) {
+        geminiOutput.textContent = 'Please enter a note to explain.';
+        return;
+      }
+      geminiOutput.textContent = 'Gemini is explaining the note...';
+      const response = await explainWithGemini(note);
+      geminiOutput.textContent = response;
+    };
+  }
+
+  if (suggestImprovementsBtn) {
+    suggestImprovementsBtn.onclick = async function() {
+      const note = codeInput.value;
+      if (!note) {
+        geminiOutput.textContent = 'Please enter a note for suggestions.';
+        return;
+      }
+      geminiOutput.textContent = 'Gemini is suggesting improvements...';
+      const response = await explainWithGemini('Suggest improvements: ' + note);
+      geminiOutput.textContent = response;
+    };
+  }
+  fetchProjects();
+
+  // Project creation
+  const addForm = document.getElementById("addProjectForm");
+  const projectNameInput = document.getElementById("projectName");
+  const projectDescInput = document.getElementById("projectDesc");
+  const projectFilesInput = document.getElementById("projectFilesInput");
+  let selectedFiles = [];
+  if (projectFilesInput) {
+    projectFilesInput.onchange = function(e) {
+      let files = [...e.target.files];
+      files.forEach(f => {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          selectedFiles.push({ name: f.name, content: ev.target.result });
+        };
+        reader.readAsText(f);
+      });
+    };
+  }
+  if (addForm && projectNameInput && projectDescInput) {
+    addForm.onsubmit = async function(e) {
+      e.preventDefault();
+      let name = projectNameInput.value.trim();
+      let desc = projectDescInput.value.trim();
+      let files = selectedFiles;
+      let code = '';
+      let notes = [];
+      let members = [userEmail];
+      let createdBy = userEmail;
+      await fetch('http://localhost:5000/api/auth/project', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, desc, code, files, notes, members, createdBy })
+      });
+      selectedFiles = [];
+      fetchProjects();
+      this.reset();
+    };
+  }
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.onclick = async function() {
+      const email = localStorage.getItem('email');
+      console.log('Logout clicked, email:', email);
+      if (email) {
+        const res = await fetch('http://localhost:5000/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        console.log('Logout API response:', await res.json());
+        localStorage.removeItem('email');
+        localStorage.removeItem('user');
+      }
+      window.location.href = 'signup.html';
+    };
+  }
+
+  const addProjectForm = document.getElementById('addProjectForm');
+if (addProjectForm) {
+  addProjectForm.addEventListener('submit', function(e) {
+    setTimeout(() => {
+      // Clear all inputs after adding project
+      addProjectForm.reset();
+      const projectFilesList = document.getElementById('projectFilesList');
+      if (projectFilesList) projectFilesList.innerHTML = '';
+    }, 100); // Slight delay to allow backend processing
+  });
+}
+});
+</script>
